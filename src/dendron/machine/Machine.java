@@ -154,7 +154,7 @@ public class Machine {
      */
     @Override
     public String toString() {
-      return "STORE " + this.name;
+      return "STORE\t" + this.name;
     }
   }
 
@@ -186,7 +186,7 @@ public class Machine {
      */
     @Override
     public String toString() {
-      return "PUSH";
+      return "PUSH\t" + c;
     }
   }
 
@@ -216,7 +216,7 @@ public class Machine {
      */
     @Override
     public String toString() {
-      return "LOAD";
+      return "LOAD\t" + v;
     }
   }
 
@@ -238,7 +238,7 @@ public class Machine {
      */
     @Override
     public String toString() {
-      return "SUBTRACT";
+      return "SUB";
     }
   }
 
@@ -259,7 +259,7 @@ public class Machine {
      */
     @Override
     public String toString() {
-      return "MULTIPLY";
+      return "MUL";
     }
   }
 
@@ -343,6 +343,11 @@ public class Machine {
       int op1 = stack.pop();
 
       System.out.println("*** " + op1);
+    }
+
+    @Override
+    public String toString() {
+      return "PRINT";
     }
   }
 }

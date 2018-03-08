@@ -1,6 +1,7 @@
 package dendron;
-//import dendron_sol.machine.Machine;
-//import dendron_sol.tree.ParseTree;
+
+import dendron.machine.Machine;
+import dendron.tree.ParseTree;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -125,22 +126,17 @@ public class DendronTest {
       tokenList = new LinkedList<>(Arrays.asList(args));
     }
 
-    for (String s:
-         tokenList) {
-      System.out.println(s);
+    ParseTree tree = new ParseTree(tokenList);
 
-    }
+    tree.displayProgram();
 
-//    ParseTree tree = new ParseTree(tokenList);
-//
-//    tree.displayProgram();
-//
-//    tree.interpret();
-//
-//    List<Machine.Instruction> program = tree.compile();
-//
-//    Machine.displayInstructions(program);
-//
-//    Machine.execute(program);
+    tree.interpret();
+
+    List<Machine.Instruction> program = tree.compile();
+
+
+    Machine.displayInstructions(program);
+
+    Machine.execute(program);
   }
 }

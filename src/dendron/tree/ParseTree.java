@@ -1,8 +1,10 @@
 package dendron.tree;
 
+import dendron.Errors;
 import dendron.machine.Machine;
 
-
+import javax.sound.midi.Soundbank;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,8 +18,9 @@ import java.util.Map;
  */
 public class ParseTree {
 
-  Nodes.aNode mainNode;
-  static Map<String, Integer> sysTab = new HashMap<>();
+  private Map<String, Integer> sysTab;
+  private List<String> cAction;
+  ArrayList<ActionNode> allActions;
 
   /**
    * Parse the entire list of program tokens. The program is a
@@ -28,7 +31,28 @@ public class ParseTree {
    * @param program the token list (Strings)
    */
   public ParseTree(List<String> program) {
+    cAction = new ArrayList<>(0);
+    allActions = new ArrayList<>(0);
+    sysTab = new HashMap<>();
 
+    ArrayList<String> currentAction = new ArrayList<>(0);
+
+    for(int i = 0; i < program.size(); i++) {
+      if(program.get(i).equals(":=") || program.get(i).equals("@")) {
+        if(currentAction.isEmpty()) {
+          currentAction.add(program.get(i));
+        }
+        else {
+          allActions.add(parseAction(currentAction));
+          currentAction.clear();
+          currentAction.add(program.get(i));
+        }
+      }
+      else {
+        currentAction.add(program.get(i));
+      }
+    }
+    allActions.add(parseAction(currentAction));
 
   }
 
@@ -40,23 +64,29 @@ public class ParseTree {
    * @return a parse tree for the action
    */
   private ActionNode parseAction(List<String> program) {
-    for(int i = program.size() - 1; i > 0; i--) {
-      String val = program.get(i);
-      if(isInt(val)) {
-
-      }
-
+    switch (program.get(0)){
+      case ":=":
+          this.cAction = program.subList(2, program.size());
+          return new Nodes.Assignment(program.get(1), parseExpr());
+      case "@":
+          this.cAction = program.subList(1, program.size());
+        return new Nodes.Print(parseExpr());
+      default:
+        Errors.report(Errors.Type.ILLEGAL_VALUE, program.get(0));
+        return null;
     }
 
-
-    return null;
   }
 
   public static boolean isInt(String s) {
     char[] chars = s.toCharArray();
 
-    for(char c : chars) {
-      if(!Character.isDigit(c))
+    if(!Character.isDigit(chars[0]))
+      if(!Character.isLetter( '-'))
+        return false;
+
+    for(int i = 1; i < chars.length; i++) {
+      if(!Character.isDigit(chars[i]))
         return false;
     }
     return true;
@@ -70,8 +100,24 @@ public class ParseTree {
    * @param program the list of tokens
    * @return a parse tree for this expression
    */
-  private ExpressionNode parseExpr(List<String> program) {
-    return null;
+  private ExpressionNode parseExpr() {
+    ActionNode pAction;
+    switch (this.cAction.get(0)){
+      case "+":
+      case "-":
+      case "*":
+      case "/":
+        return new Nodes.BinaryOperation(this.cAction.remove(0), parseExpr(), parseExpr() );
+      case "_":
+      case "#":
+        return new Nodes.UnaryOperation(this.cAction.remove(0), parseExpr());
+    }
+
+    if(isInt(this.cAction.get(0))) {
+      return new Nodes.Constant(Integer.parseInt(this.cAction.remove(0)));
+    }
+    return new Nodes.Load(this.cAction.remove(0));
+
   }
 
   /**
@@ -81,6 +127,12 @@ public class ParseTree {
    * @see dendron.tree.ActionNode#infixDisplay()
    */
   public void displayProgram() {
+    System.out.println("The program, with expressions in infix notation: \n");
+    for(ActionNode a : allActions) {
+      a.infixDisplay();
+      System.out.println("");
+    }
+    System.out.println();
   }
 
   /**
@@ -89,7 +141,13 @@ public class ParseTree {
    * @see dendron.tree.ActionNode#execute(Map)
    */
   public void interpret() {
-    mainNode.execute(sysTab);
+    System.out.println("Interpreting the parse tree...");
+    for(ActionNode a : allActions) {
+      a.execute(this.sysTab);
+    }
+    System.out.println("Interpretation complete.");
+    System.out.println();
+    Errors.dump(this.sysTab);
   }
 
   /**
@@ -100,7 +158,11 @@ public class ParseTree {
    * @see Machine.Instruction#execute()
    */
   public List<Machine.Instruction> compile() {
-    return null;
+    ArrayList<Machine.Instruction> i = new ArrayList<>();
+    for(ActionNode a : allActions) {
+      i.addAll(a.emit());
+    }
+    return i;
   }
 
 }
