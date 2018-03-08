@@ -1,0 +1,24 @@
+Executing compiled code...
+Machine: execution ended with 0 items left on the stack.
+
+Symbol Table Contents
+=====================
+
+           x :         154
+
+
+PUSH  2
+PUSH  3
+MUL
+PUSH  9
+PUSH  5
+SUB
+MUL
+PUSH  10
+NEG
+MUL
+PUSH  100
+NEG
+MUL
+SQRT
+STORE x
