@@ -18,7 +18,7 @@ public class DendronTest {
       new LinkedList<>(Arrays.asList(":=", "x", "55")),
       new LinkedList<>(Arrays.asList(
           ":=", "able", "77",
-          ":=", "baker", "3",
+          ":=", "baker", "-3",
           ":=", "charlie", "/", "able", "baker"
       )),
       new LinkedList<>(Arrays.asList(

@@ -44,15 +44,19 @@ public class ParseTree {
         }
         else {
           allActions.add(parseAction(currentAction));
+          if(cAction.size() != 0) Errors.report(Errors.Type.EXTRA_TOKENS, cAction.size() + " Tokens remain.");
           currentAction.clear();
           currentAction.add(program.get(i));
         }
       }
       else {
+        if(currentAction.isEmpty()) Errors.report(Errors.Type.ILLEGAL_VALUE, program.get(i));
         currentAction.add(program.get(i));
       }
     }
     allActions.add(parseAction(currentAction));
+    if(cAction.size() != 0) Errors.report(Errors.Type.EXTRA_TOKENS, cAction.size() + " Tokens remain.");
+
 
   }
 
@@ -66,10 +70,12 @@ public class ParseTree {
   private ActionNode parseAction(List<String> program) {
     switch (program.get(0)){
       case ":=":
-          this.cAction = program.subList(2, program.size());
+        if(program.size() < 3) Errors.report(Errors.Type.PREMATURE_END, "Only " + program.size() + " token entered");
+        this.cAction = program.subList(2, program.size());
           return new Nodes.Assignment(program.get(1), parseExpr());
       case "@":
-          this.cAction = program.subList(1, program.size());
+        if(program.size() < 2) Errors.report(Errors.Type.PREMATURE_END, "Only " + program.size() + " token entered");
+        this.cAction = program.subList(1, program.size());
         return new Nodes.Print(parseExpr());
       default:
         Errors.report(Errors.Type.ILLEGAL_VALUE, program.get(0));
@@ -78,17 +84,25 @@ public class ParseTree {
 
   }
 
+  /**
+   * Used to test if a given string is an int by converting it to a char
+   * array and then seeing if all characters are digits. The exception is the
+   * first digit when the number is negative so the first digit can be a "-"
+   * @param s the string to test
+   * @return if the string is a number
+   */
   public static boolean isInt(String s) {
     char[] chars = s.toCharArray();
-
     if(!Character.isDigit(chars[0]))
-      if(!Character.isLetter( '-'))
+      if(chars[0] != '-') {
         return false;
+      }
 
     for(int i = 1; i < chars.length; i++) {
       if(!Character.isDigit(chars[i]))
         return false;
     }
+
     return true;
   }
 
